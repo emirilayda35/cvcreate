@@ -1,0 +1,54 @@
+/* ===================================================
+   PRINT / PDF STYLES — A4, no header/footer, no overflow
+   =================================================== */
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 10mm 12mm 10mm 12mm;
+  }
+
+  /* ── Hide everything except the CV ── */
+  body > *:not(#__NEXT_DATA__) { visibility: hidden; }
+  .cv-print-root, .cv-print-root * { visibility: visible; }
+
+  /* ── Remove browser's default header/footer (URL, date, page#) ── */
+  html {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    color-adjust: exact !important;
+  }
+
+  /* ── CV root reset ── */
+  .cv-print-root {
+    position: fixed !important;
+    inset: 0 !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    height: auto !important;
+    aspect-ratio: unset !important;
+    overflow: visible !important;
+  }
+
+  /* ── Gradient backgrounds must print ── */
+  .cv-header,
+  [style*="linear-gradient"],
+  [style*="background:"] {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* ── Prevent section page-breaks ── */
+  .cv-section {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  /* ── Inner scrollable areas become auto height ── */
+  .cv-print-root > div {
+    overflow: visible !important;
+    max-height: unset !important;
+    height: auto !important;
+  }
+}
