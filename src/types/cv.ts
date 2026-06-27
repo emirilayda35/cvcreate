@@ -58,4 +58,4 @@ export const defaultCVData: CVData = {
   skills: [],
 };
 
-export type LangCode = "tr" | "en" | "de" | "fr";
+export type LangCode = "tr" | "en" | "de" | "fr" | "ar";

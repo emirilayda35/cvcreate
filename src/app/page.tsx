@@ -7,12 +7,14 @@ import StepPersonal from "@/components/StepPersonal";
 import StepExperience from "@/components/StepExperience";
 import StepEducation from "@/components/StepEducation";
 import StepSkills from "@/components/StepSkills";
-import TemplateClassic from "@/components/templates/TemplateClassic";
-import TemplateModern from "@/components/templates/TemplateModern";
-import TemplateMinimal from "@/components/templates/TemplateMinimal";
+import TemplateClassic  from "@/components/templates/TemplateClassic";
+import TemplateModern   from "@/components/templates/TemplateModern";
+import TemplateMinimal  from "@/components/templates/TemplateMinimal";
+import TemplateExecutive from "@/components/templates/TemplateExecutive";
+import TemplateHarvard  from "@/components/templates/TemplateHarvard";
 import PaywallModal from "@/components/PaywallModal";
 
-type TemplateId = "classic" | "modern" | "minimal";
+type TemplateId = "classic" | "modern" | "minimal" | "executive" | "harvard";
 
 // ── Page style injected into print iframe ──────────────────────
 const PAGE_STYLE = `
@@ -71,11 +73,12 @@ const PAGE_STYLE = `
   title { display: none; }
 `;
 
-const LANGUAGES: { code: LangCode; flag: string; label: string }[] = [
+const LANGUAGES: { code: LangCode; flag: string; label: string; rtl?: boolean }[] = [
   { code: "tr", flag: "🇹🇷", label: "TR" },
   { code: "en", flag: "🇬🇧", label: "EN" },
   { code: "de", flag: "🇩🇪", label: "DE" },
   { code: "fr", flag: "🇫🇷", label: "FR" },
+  { code: "ar", flag: "🇸🇦", label: "AR", rtl: true },
 ];
 
 export default function Home() {
@@ -89,6 +92,7 @@ export default function Home() {
 
   const cvRef = useRef<HTMLDivElement>(null);
   const tr = getT(lang);
+  const isRtl = lang === "ar";
 
   const STEPS = [
     { id: 0, label: tr.personalInfo, icon: "👤" },
@@ -98,9 +102,11 @@ export default function Home() {
   ];
 
   const TEMPLATES = [
-    { id: "classic" as TemplateId, label: tr.templateClassic,  preview: "🔵" },
-    { id: "modern"  as TemplateId, label: tr.templateModern,   preview: "🟢" },
-    { id: "minimal" as TemplateId, label: tr.templateMinimal,  preview: "⚪" },
+    { id: "classic"   as TemplateId, label: tr.templateClassic,   preview: "🔵" },
+    { id: "modern"    as TemplateId, label: tr.templateModern,    preview: "🟣" },
+    { id: "minimal"   as TemplateId, label: tr.templateMinimal,   preview: "⚪" },
+    { id: "executive" as TemplateId, label: tr.templateExecutive, preview: "🟡" },
+    { id: "harvard"   as TemplateId, label: tr.templateHarvard,   preview: "🔴" },
   ];
 
   const getDocTitle = useCallback(() => {
@@ -138,7 +144,7 @@ export default function Home() {
       }}>
         {/* Logo */}
         <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-          <div style={{ width: "28px", height: "28px", background: "linear-gradient(135deg,#3A5A8C,#5B8A7A)", borderRadius: "7px", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "14px" }}>📄</div>
+          <div style={{ width: "28px", height: "28px", background: "linear-gradient(135deg,#1E5799,#2E86C8)", borderRadius: "7px", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "14px" }}>📄</div>
           <span style={{ fontWeight: 700, fontSize: "16px", color: "var(--color-text-heading)", letterSpacing: "-0.01em" }}>CVCreate</span>
         </div>
 
@@ -204,7 +210,7 @@ export default function Home() {
             disabled={isPrinting}
             style={{
               padding: "8px 18px", borderRadius: "var(--radius-sm)", border: "none",
-              background: "linear-gradient(135deg,#3A5A8C,#5B8A7A)",
+              background: "linear-gradient(135deg,#1E5799,#2E86C8)",
               color: "#fff", fontSize: "13px", fontWeight: 600, cursor: "pointer",
               opacity: isPrinting ? .6 : 1,
               boxShadow: "0 2px 10px rgba(58,90,140,0.28)",
@@ -217,7 +223,7 @@ export default function Home() {
       <div style={{ flex: 1, display: "grid", gridTemplateColumns: "420px 1fr", height: "calc(100vh - 58px)" }}>
 
         {/* LEFT — Form */}
-        <div className="no-print" style={{ background: "var(--color-surface)", borderRight: "1px solid var(--color-border)", display: "flex", flexDirection: "column", overflow: "hidden" }}>
+        <div className="no-print" dir={isRtl ? "rtl" : "ltr"} style={{ background: "var(--color-surface)", borderRight: "1px solid var(--color-border)", display: "flex", flexDirection: "column", overflow: "hidden" }}>
 
           {/* Stepper */}
           <div style={{ padding: "14px 18px 0", borderBottom: "1px solid var(--color-border)" }}>
@@ -266,7 +272,7 @@ export default function Home() {
               onClick={() => setPaywallOpen(true)}
               style={{
                 width: "100%", padding: "13px", borderRadius: "var(--radius-md)", border: "none",
-                background: hasContent ? "linear-gradient(135deg,#2A3F5F 0%,#3A5A8C 55%,#4A7A6A 100%)" : "var(--color-surface-2)",
+                background: hasContent ? "linear-gradient(135deg,#1B2E52 0%,#1E5799 55%,#2E86C8 100%)" : "var(--color-surface-2)",
                 color: hasContent ? "#fff" : "var(--color-text-placeholder)",
                 fontSize: "14px", fontWeight: 700, cursor: hasContent ? "pointer" : "default",
                 boxShadow: hasContent ? "0 4px 18px rgba(58,90,140,0.30)" : "none",
@@ -285,9 +291,11 @@ export default function Home() {
           style={{ overflowY: "auto", display: "flex", justifyContent: "center", alignItems: "flex-start", padding: "32px 24px", background: "var(--color-bg)" }}
           onClick={() => langOpen && setLangOpen(false)}
         >
-          {activeTemplate === "classic" && <TemplateClassic ref={cvRef} data={cvData} t={tr} />}
-          {activeTemplate === "modern"  && <TemplateModern  ref={cvRef} data={cvData} t={tr} />}
-          {activeTemplate === "minimal" && <TemplateMinimal ref={cvRef} data={cvData} t={tr} />}
+          {activeTemplate === "classic"   && <TemplateClassic   ref={cvRef} data={cvData} t={tr} />}
+          {activeTemplate === "modern"    && <TemplateModern    ref={cvRef} data={cvData} t={tr} />}
+          {activeTemplate === "minimal"   && <TemplateMinimal   ref={cvRef} data={cvData} t={tr} />}
+          {activeTemplate === "executive" && <TemplateExecutive ref={cvRef} data={cvData} t={tr} />}
+          {activeTemplate === "harvard"   && <TemplateHarvard   ref={cvRef} data={cvData} t={tr} />}
         </div>
       </div>
 

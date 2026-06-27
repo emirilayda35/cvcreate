@@ -31,13 +31,13 @@ export default function StepPersonal({ data, onChange, t }: Props) {
   };
 
   const fields: { key: keyof PersonalInfo; label: string; placeholder: string; type?: string; rows?: number }[] = [
-    { key: "fullName", label: t.fullName,   placeholder: "Ahmet Yılmaz" },
-    { key: "title",    label: t.titleLabel, placeholder: "Senior Frontend Developer" },
-    { key: "email",    label: t.email,      placeholder: "ahmet@ornek.com", type: "email" },
-    { key: "phone",    label: t.phone,      placeholder: "+90 532 000 00 00", type: "tel" },
-    { key: "location", label: t.location,   placeholder: "İstanbul, Türkiye" },
-    { key: "website",  label: t.website,    placeholder: "linkedin.com/in/ahmetyilmaz" },
-    { key: "summary",  label: t.summary,    placeholder: "Kendinizi birkaç cümleyle tanıtın...", rows: 4 },
+    { key: "fullName", label: t.fullName,   placeholder: t.ph.fullName },
+    { key: "title",    label: t.titleLabel, placeholder: t.ph.title },
+    { key: "email",    label: t.email,      placeholder: t.ph.email, type: "email" },
+    { key: "phone",    label: t.phone,      placeholder: t.ph.phone, type: "tel" },
+    { key: "location", label: t.location,   placeholder: t.ph.location },
+    { key: "website",  label: t.website,    placeholder: t.ph.website },
+    { key: "summary",  label: t.summary,    placeholder: t.ph.summary, rows: 4 },
   ];
 
   return (

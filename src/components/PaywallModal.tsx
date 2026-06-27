@@ -175,7 +175,7 @@ export default function PaywallModal({ isOpen, onClose, onPaymentSuccess, cvName
           <div style={{ padding:"56px 32px", textAlign:"center" }}>
             <div style={{
               width:"64px", height:"64px", borderRadius:"50%",
-              background:"linear-gradient(135deg,#3A5A8C,#5B8A7A)",
+              background:"linear-gradient(135deg,#1E5799,#2E86C8)",
               display:"flex", alignItems:"center", justifyContent:"center",
               margin:"0 auto 20px", fontSize:"28px",
               animation:"checkPop 0.4s cubic-bezier(.34,1.56,.64,1) both",

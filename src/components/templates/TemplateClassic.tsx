@@ -33,7 +33,7 @@ const TemplateClassic = forwardRef<HTMLDivElement, Props>(function TemplateClass
     }}>
 
       {/* Header */}
-      <div className="cv-header" style={{ background: "linear-gradient(135deg,#2A3F5F 0%,#3A5A8C 60%,#4A7A6A 100%)", padding: "32px 40px 24px", color: "#fff", flexShrink: 0 }}>
+      <div className="cv-header" style={{ background: "linear-gradient(135deg,#1B2E52 0%,#1E5799 55%,#2E86C8 100%)", padding: "32px 40px 24px", color: "#fff", flexShrink: 0 }}>
         <div style={{ display: "flex", alignItems: "center", gap: "20px", marginBottom: "12px" }}>
           {/* Avatar */}
           <div style={{
@@ -50,7 +50,7 @@ const TemplateClassic = forwardRef<HTMLDivElement, Props>(function TemplateClass
           </div>
           <div style={{ flex: 1 }}>
             <h1 style={{ fontFamily: "'Playfair Display',Georgia,serif", fontSize: personal.fullName ? "26px" : "22px", fontWeight: 700, marginBottom: "3px", color: personal.fullName ? "#fff" : "rgba(255,255,255,0.35)" }}>
-              {personal.fullName || "Ad Soyad"}
+              {personal.fullName || t.cvFullNameFallback}
             </h1>
             <p style={{ fontSize: "13px", color: personal.title ? "rgba(255,255,255,0.85)" : "rgba(255,255,255,0.3)", letterSpacing: "0.03em" }}>
               {personal.title || t.titleLabel}

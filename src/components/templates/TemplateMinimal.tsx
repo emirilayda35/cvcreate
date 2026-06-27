@@ -53,7 +53,7 @@ const TemplateMinimal = forwardRef<HTMLDivElement, Props>(function TemplateMinim
           </div>
           <div style={{ flex: 1 }}>
             <h1 style={{ fontFamily: "'Playfair Display',Georgia,serif", fontSize: personal.fullName ? "28px" : "22px", fontWeight: 700, letterSpacing: "-0.02em", color: personal.fullName ? "#1A1A2E" : "#C0C0D0", marginBottom: "3px" }}>
-              {personal.fullName || "Ad Soyad"}
+              {personal.fullName || t.cvFullNameFallback}
             </h1>
             <p style={{ fontSize: "14px", color: "#4A4E8A", fontWeight: 400, letterSpacing: "0.02em" }}>
               {personal.title || <span style={{ color: "#C0C0D0" }}>{t.titleLabel}</span>}
