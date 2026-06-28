@@ -1,6 +1,6 @@
 "use client";
 import { useState, useRef, useCallback } from "react";
-import { useReactToPrint } from "react-to-print";
+import { printCV } from "@/lib/printCV";
 import { CVData, defaultCVData, LangCode } from "@/types/cv";
 import { t as getT } from "@/i18n/translations";
 import StepPersonal from "@/components/StepPersonal";
@@ -15,63 +15,6 @@ import TemplateHarvard  from "@/components/templates/TemplateHarvard";
 import PaywallModal from "@/components/PaywallModal";
 
 type TemplateId = "classic" | "modern" | "minimal" | "executive" | "harvard";
-
-// ── Page style injected into print iframe ──────────────────────
-const PAGE_STYLE = `
-  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@600;700&display=swap');
-
-  @page {
-    size: A4 portrait;
-    margin: 10mm 12mm;
-    /* Suppress browser header/footer (URL, date, time) */
-    margin-top: 0mm;
-    margin-bottom: 0mm;
-  }
-
-  /* Remove any running headers/footers the browser might add */
-  @page { orphans: 2; widows: 2; }
-
-  html {
-    -webkit-print-color-adjust: exact !important;
-    print-color-adjust: exact !important;
-  }
-
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-
-  body {
-    font-family: 'Inter', -apple-system, sans-serif;
-    background: transparent;
-  }
-
-  .cv-print-root {
-    box-shadow: none !important;
-    border-radius: 0 !important;
-    width: 100% !important;
-    max-width: 100% !important;
-    aspect-ratio: unset !important;
-    overflow: visible !important;
-  }
-
-  .cv-print-root > div,
-  .cv-print-root > div > div {
-    overflow: visible !important;
-    max-height: unset !important;
-    height: auto !important;
-  }
-
-  .cv-header {
-    -webkit-print-color-adjust: exact !important;
-    print-color-adjust: exact !important;
-  }
-
-  .cv-section {
-    page-break-inside: avoid;
-    break-inside: avoid;
-  }
-
-  /* Absolutely remove any browser-injected title/URL/date text */
-  title { display: none; }
-`;
 
 const LANGUAGES: { code: LangCode; flag: string; label: string; rtl?: boolean }[] = [
   { code: "tr", flag: "🇹🇷", label: "TR" },
@@ -114,18 +57,14 @@ export default function Home() {
     return name ? name.toLowerCase().replace(/\s+/g, "_") + "_cv" : "cv";
   }, [cvData.personal.fullName]);
 
-  const triggerPrint = useReactToPrint({
-    contentRef: cvRef,
-    documentTitle: getDocTitle(),
-    pageStyle: PAGE_STYLE,
-    onBeforePrint: async () => setIsPrinting(true),
-    onAfterPrint: () => setIsPrinting(false),
-    onPrintError: (_l, e) => { console.error(e); setIsPrinting(false); },
-  });
-
   const handlePaymentSuccess = () => {
     setPaywallOpen(false);
-    setTimeout(() => triggerPrint(), 200);
+    setTimeout(() => {
+      if (!cvRef.current) return;
+      setIsPrinting(true);
+      printCV(cvRef.current, getDocTitle(), lang);
+      setTimeout(() => setIsPrinting(false), 1000);
+    }, 200);
   };
 
   const hasContent = !!(cvData.personal.fullName || cvData.experiences.length || cvData.education.length || cvData.skills.length);
