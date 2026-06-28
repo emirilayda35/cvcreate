@@ -1,9 +1,5 @@
 import { LangCode } from "@/types/cv";
 
-/**
- * CV elementini alır, tamamen izole bir print window açar.
- * İçerik az olsa bile A4 boyutu tam dolar — arka plan rengi sayfayı kaplar.
- */
 export function printCV(
   cvElement: HTMLElement,
   docTitle: string,
@@ -14,9 +10,8 @@ export function printCV(
     "https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@600;700&display=swap";
   const dir = lang === "ar" ? "rtl" : "ltr";
 
-  // Şablonun arka plan rengini al (sidebar için de)
-  // Her şablon kendi bg'sini inline style'da taşıyor, body için de aynısını kullanacağız
-  const computedBg = window.getComputedStyle(cvElement).backgroundColor;
+  // CV'nin arka plan rengini body'e de ver (sayfanın boş kısmı renksiz kalmasın)
+  const computedBg = window.getComputedStyle(cvElement).backgroundColor || "#ffffff";
 
   const printHTML = `<!DOCTYPE html>
 <html lang="${lang}" dir="${dir}">
@@ -27,10 +22,8 @@ export function printCV(
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="${googleFonts}" rel="stylesheet" />
   <style>
-    /* ── RESET ── */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    /* ── CSS VARIABLES ── */
     :root {
       --color-bg: #F4F6F8;
       --color-surface: #FFFFFF;
@@ -53,28 +46,24 @@ export function printCV(
       --shadow-preview: none;
     }
 
-    html {
+    html, body {
+      width: 210mm;
+      /* body yüksekliği içeriğe göre otomatik — min-height YOK */
+      background: ${computedBg};
       -webkit-print-color-adjust: exact !important;
       print-color-adjust: exact !important;
       color-adjust: exact !important;
     }
 
-    /* Body arka planı = CV'nin kendi arka planı → sayfa boşlukları da renkli olur */
-    body {
-      margin: 0;
-      padding: 0;
-      width: 210mm;
-      min-height: 297mm;
-      background: ${computedBg || "#ffffff"};
-      -webkit-print-color-adjust: exact !important;
-      print-color-adjust: exact !important;
-    }
-
-    /* ── CV KAPSAYICI: tam A4 doldur ── */
+    /* ── CV KAPSAYICI ──────────────────────────────────────────
+       min-height: 297mm → içerik boş/az olsa tam A4 dolar.
+       Ama içerik fazla olunca height: auto ile büyür,
+       2. sayfaya taşabilir (bu doğaldur — tek sayfa zorlama yok).
+       ────────────────────────────────────────────────────────── */
     .cv-print-root {
       width: 210mm !important;
       max-width: 210mm !important;
-      min-height: 297mm !important;   /* ← İçerik az olsa da A4 yüksekliğini doldur */
+      min-height: 297mm !important;
       height: auto !important;
       border-radius: 0 !important;
       box-shadow: none !important;
@@ -82,26 +71,31 @@ export function printCV(
       overflow: visible !important;
       display: flex !important;
       flex-direction: column !important;
+      /* Kendi içindeki overflow'ları aç */
+      position: relative;
     }
 
-    /* Sidebar'lar min-height alsın (Modern, Executive) */
-    .cv-print-root > div {
+    /* Tüm alt elemanlar — sadece overflow ve max-height sıfırla,
+       min-height VERME (çarpan etkisi yapar) */
+    .cv-print-root * {
       overflow: visible !important;
       max-height: unset !important;
-      height: auto !important;
     }
 
-    /* Sidebar div'leri kendi arkaplanlarını tam uzatabilsin */
-    .cv-print-root > div[style*="flex"] > div {
+    /* Sidebar'lar (Modern, Executive) tam yüksekliğe uzasın */
+    .cv-sidebar {
       min-height: 297mm !important;
     }
 
-    /* Gradient ve solid renkler print'te çıksın */
-    * {
+    /* Renk ve gradient print'te çıksın */
+    .cv-print-root,
+    .cv-print-root * {
       -webkit-print-color-adjust: exact !important;
       print-color-adjust: exact !important;
+      color-adjust: exact !important;
     }
 
+    /* Section kırılımını engelle */
     .cv-section {
       page-break-inside: avoid;
       break-inside: avoid;
@@ -130,7 +124,7 @@ export function printCV(
 
   const printWindow = window.open("", "_blank", "width=900,height=700");
   if (!printWindow) {
-    alert("Pop-up engellendi. Lütfen tarayıcı ayarlarından pop-up'lara izin verin ve tekrar deneyin.");
+    alert("Pop-up engellendi. Lütfen tarayıcı ayarlarından pop-up'lara izin verin.");
     return;
   }
   printWindow.document.open();

@@ -90,7 +90,7 @@ const TemplateExecutive = forwardRef<HTMLDivElement, Props>(function TemplateExe
       <div style={{ flex: 1, display: "flex", overflow: "visible" }}>
 
         {/* LEFT — dar sütun */}
-        <div style={{ width: "190px", flexShrink: 0, background: "#F0F2F5", padding: "24px 18px", display: "flex", flexDirection: "column", gap: "20px", minHeight: "100%" }}>
+        <div className="cv-sidebar" style={{ width: "190px", flexShrink: 0, background: "#F0F2F5", padding: "24px 18px", display: "flex", flexDirection: "column", gap: "20px" }}>
           {/* Skills */}
           {filledSkills.length > 0 && (
             <div className="cv-section">

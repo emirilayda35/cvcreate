@@ -55,12 +55,9 @@ html, body {
   outline-offset: 2px;
 }
 
-/* ── CV ÖNIZLEME: ekranda A4 oranı ── */
-.cv-print-root {
-  min-height: min(calc(100vw * 0.6 * 1.414), 990px);
-}
 
-/* ── PRINT: tam A4, kenar boşluksuz ── */
+
+/* ── CV PRINT: kenar boşluksuz, tam A4 ── */
 @media print {
   @page {
     size: A4 portrait;
@@ -76,13 +73,20 @@ html, body {
   .cv-print-root {
     min-height: 297mm !important;
     width: 210mm !important;
-    max-width: 210mm !important;
     border-radius: 0 !important;
     box-shadow: none !important;
     overflow: visible !important;
   }
 
-  .cv-print-root * {
+  /* Sidebar'lar tam uzasın */
+  .cv-sidebar {
+    min-height: 297mm !important;
+  }
+
+  /* ÖNEMLİ: sadece cv-print-root'un doğrudan child'larının
+     overflow'unu aç — min-height VERME */
+  .cv-print-root > *,
+  .cv-print-root > * > * {
     overflow: visible !important;
     max-height: unset !important;
     -webkit-print-color-adjust: exact !important;

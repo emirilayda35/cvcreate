@@ -32,7 +32,7 @@ const TemplateModern = forwardRef<HTMLDivElement, Props>(function TemplateModern
     }}>
 
       {/* Sidebar */}
-      <div style={{ width: "210px", flexShrink: 0, background: "#132044", padding: "28px 20px", display: "flex", flexDirection: "column", gap: "24px", minHeight: "297mm" }}>
+      <div className="cv-sidebar" style={{ width: "210px", flexShrink: 0, background: "#132044", padding: "28px 20px", display: "flex", flexDirection: "column", gap: "24px" }}>
         {/* Avatar */}
         <div style={{
           width: "80px", height: "80px", borderRadius: "50%", margin: "0 auto", flexShrink: 0,
