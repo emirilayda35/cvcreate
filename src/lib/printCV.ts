@@ -1,22 +1,30 @@
 import { LangCode } from "@/types/cv";
 
+/**
+ * CV'yi izole bir HTML olarak Blob URL'e yazar,
+ * yeni sekmede açar → fontlar yüklenince print dialog başlar.
+ * Mobil dahil tüm tarayıcılarda çalışır.
+ */
 export function printCV(
   cvElement: HTMLElement,
   docTitle: string,
   lang: LangCode
 ): void {
   const cvHTML = cvElement.outerHTML;
+  const dir = lang === "ar" ? "rtl" : "ltr";
+  const computedBg =
+    window.getComputedStyle(cvElement).backgroundColor || "#ffffff";
+
+  // Google Fonts'u base64 değil — <link> ile embed et
+  // (Blob URL same-origin değil, external fetch kısıtlaması yok)
   const googleFonts =
     "https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@600;700&display=swap";
-  const dir = lang === "ar" ? "rtl" : "ltr";
 
-  // CV'nin arka plan rengini body'e de ver (sayfanın boş kısmı renksiz kalmasın)
-  const computedBg = window.getComputedStyle(cvElement).backgroundColor || "#ffffff";
-
-  const printHTML = `<!DOCTYPE html>
+  const html = `<!DOCTYPE html>
 <html lang="${lang}" dir="${dir}">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>${docTitle}</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -46,20 +54,20 @@ export function printCV(
       --shadow-preview: none;
     }
 
-    html, body {
-      width: 210mm;
-      /* body yüksekliği içeriğe göre otomatik — min-height YOK */
-      background: ${computedBg};
+    html {
       -webkit-print-color-adjust: exact !important;
       print-color-adjust: exact !important;
       color-adjust: exact !important;
     }
 
-    /* ── CV KAPSAYICI ──────────────────────────────────────────
-       min-height: 297mm → içerik boş/az olsa tam A4 dolar.
-       Ama içerik fazla olunca height: auto ile büyür,
-       2. sayfaya taşabilir (bu doğaldur — tek sayfa zorlama yok).
-       ────────────────────────────────────────────────────────── */
+    body {
+      margin: 0;
+      padding: 0;
+      background: ${computedBg};
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+
     .cv-print-root {
       width: 210mm !important;
       max-width: 210mm !important;
@@ -71,31 +79,21 @@ export function printCV(
       overflow: visible !important;
       display: flex !important;
       flex-direction: column !important;
-      /* Kendi içindeki overflow'ları aç */
-      position: relative;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
     }
 
-    /* Tüm alt elemanlar — sadece overflow ve max-height sıfırla,
-       min-height VERME (çarpan etkisi yapar) */
     .cv-print-root * {
       overflow: visible !important;
       max-height: unset !important;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
     }
 
-    /* Sidebar'lar (Modern, Executive) tam yüksekliğe uzasın */
     .cv-sidebar {
       min-height: 297mm !important;
     }
 
-    /* Renk ve gradient print'te çıksın */
-    .cv-print-root,
-    .cv-print-root * {
-      -webkit-print-color-adjust: exact !important;
-      print-color-adjust: exact !important;
-      color-adjust: exact !important;
-    }
-
-    /* Section kırılımını engelle */
     .cv-section {
       page-break-inside: avoid;
       break-inside: avoid;
@@ -105,29 +103,71 @@ export function printCV(
       size: A4 portrait;
       margin: 0mm;
     }
+
+    /* Ekran görünümü — kullanıcı URL'de CV'yi görsün */
+    @media screen {
+      body {
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+        min-height: 100vh;
+        background: #E8ECF0;
+        padding: 20px;
+      }
+      .cv-print-root {
+        box-shadow: 0 8px 40px rgba(0,0,0,0.18) !important;
+        border-radius: 4px !important;
+      }
+    }
   </style>
 </head>
 <body>
   ${cvHTML}
   <script>
-    document.fonts.ready.then(function() {
-      setTimeout(function() {
-        window.print();
-        window.addEventListener('afterprint', function() {
-          window.close();
-        });
-      }, 600);
+    // Mobil uyumlu: fontlar hazır olunca print aç
+    if (document.fonts && document.fonts.ready) {
+      document.fonts.ready.then(function() {
+        setTimeout(function() { window.print(); }, 800);
+      });
+    } else {
+      // Fallback: fonts API yoksa 1.5sn bekle
+      setTimeout(function() { window.print(); }, 1500);
+    }
+
+    window.addEventListener('afterprint', function() {
+      // Mobilde sekme kapanmayabilir, sorun değil
+      try { window.close(); } catch(e) {}
     });
   </script>
 </body>
 </html>`;
 
-  const printWindow = window.open("", "_blank", "width=900,height=700");
-  if (!printWindow) {
-    alert("Pop-up engellendi. Lütfen tarayıcı ayarlarından pop-up'lara izin verin.");
-    return;
+  // ── Blob URL yöntemi (mobil uyumlu) ──────────────────────────
+  // window.open() yerine Blob + <a> → mobil Chrome/Safari'de çalışır
+  try {
+    const blob = new Blob([html], { type: "text/html;charset=utf-8" });
+    const url  = URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href   = url;
+    a.target = "_blank";
+    a.rel    = "noopener noreferrer";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+
+    // Blob URL'i 60 saniye sonra temizle
+    setTimeout(() => URL.revokeObjectURL(url), 60_000);
+
+  } catch {
+    // Blob başarısız olursa window.open fallback
+    const w = window.open("", "_blank");
+    if (w) {
+      w.document.open();
+      w.document.write(html);
+      w.document.close();
+    } else {
+      alert("PDF açılamadı. Lütfen tarayıcınızda pop-up ve yeni sekme iznini açın.");
+    }
   }
-  printWindow.document.open();
-  printWindow.document.write(printHTML);
-  printWindow.document.close();
 }
