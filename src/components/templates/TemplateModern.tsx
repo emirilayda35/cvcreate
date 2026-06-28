@@ -28,11 +28,11 @@ const TemplateModern = forwardRef<HTMLDivElement, Props>(function TemplateModern
       width: "100%", maxWidth: "700px",
       background: "#FAFBF9", borderRadius: "var(--radius-lg)", boxShadow: "var(--shadow-preview)",
       overflow: "hidden", fontFamily: "'Inter',sans-serif", fontSize: "13px", color: "#1A2535",
-      display: "flex", aspectRatio: "1 / 1.414",
+      display: "flex", minHeight: "297mm",
     }}>
 
       {/* Sidebar */}
-      <div style={{ width: "210px", flexShrink: 0, background: "#132044", padding: "28px 20px", display: "flex", flexDirection: "column", gap: "24px", overflowY: "auto" }}>
+      <div style={{ width: "210px", flexShrink: 0, background: "#132044", padding: "28px 20px", display: "flex", flexDirection: "column", gap: "24px", minHeight: "297mm" }}>
         {/* Avatar */}
         <div style={{
           width: "80px", height: "80px", borderRadius: "50%", margin: "0 auto", flexShrink: 0,
@@ -77,7 +77,7 @@ const TemplateModern = forwardRef<HTMLDivElement, Props>(function TemplateModern
       </div>
 
       {/* Main content */}
-      <div style={{ flex: 1, padding: "28px 24px", display: "flex", flexDirection: "column", gap: "20px", overflowY: "auto" }}>
+      <div style={{ flex: 1, padding: "28px 24px", display: "flex", flexDirection: "column", gap: "20px" }}>
         <div style={{ borderBottom: `3px solid ${accentLight}`, paddingBottom: "16px", flexShrink: 0 }}>
           <h1 style={{ fontFamily: "'Playfair Display',Georgia,serif", fontSize: personal.fullName ? "26px" : "22px", fontWeight: 700, color: personal.fullName ? "#1A2535" : "#A8B8CC", lineHeight: 1.15, marginBottom: "3px" }}>
             {personal.fullName || t.cvFullNameFallback}

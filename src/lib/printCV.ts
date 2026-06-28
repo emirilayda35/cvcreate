@@ -2,29 +2,26 @@ import { LangCode } from "@/types/cv";
 
 /**
  * CV elementini alır, tamamen izole bir print window açar.
- * Sadece CV görünür — navbar, form paneli, hiçbir şey çıkmaz.
- * Mobil dahil tüm tarayıcılarda çalışır.
+ * İçerik az olsa bile A4 boyutu tam dolar — arka plan rengi sayfayı kaplar.
  */
 export function printCV(
   cvElement: HTMLElement,
   docTitle: string,
   lang: LangCode
 ): void {
-  // CV'nin mevcut HTML'ini al
   const cvHTML = cvElement.outerHTML;
-
-  // Tüm inline font import'larını topla
   const googleFonts =
     "https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@600;700&display=swap";
-
-  // RTL desteği
   const dir = lang === "ar" ? "rtl" : "ltr";
+
+  // Şablonun arka plan rengini al (sidebar için de)
+  // Her şablon kendi bg'sini inline style'da taşıyor, body için de aynısını kullanacağız
+  const computedBg = window.getComputedStyle(cvElement).backgroundColor;
 
   const printHTML = `<!DOCTYPE html>
 <html lang="${lang}" dir="${dir}">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>${docTitle}</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -33,16 +30,7 @@ export function printCV(
     /* ── RESET ── */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    html, body {
-      width: 210mm;
-      background: #fff;
-      font-family: 'Inter', -apple-system, sans-serif;
-      -webkit-print-color-adjust: exact !important;
-      print-color-adjust: exact !important;
-      color-adjust: exact !important;
-    }
-
-    /* ── CSS VARIABLES (şablonların kullandığı tokenlar) ── */
+    /* ── CSS VARIABLES ── */
     :root {
       --color-bg: #F4F6F8;
       --color-surface: #FFFFFF;
@@ -60,85 +48,91 @@ export function printCV(
       --color-accent-light: #D6E8F8;
       --radius-sm: 6px;
       --radius-md: 10px;
-      --radius-lg: 16px;
+      --radius-lg: 0px;
       --shadow-card: none;
       --shadow-preview: none;
     }
 
-    /* ── CV KAPSAYICI ── */
-    .cv-print-root {
-      width: 100% !important;
-      max-width: 100% !important;
-      border-radius: 0 !important;
-      box-shadow: none !important;
-      aspect-ratio: unset !important;
-      overflow: visible !important;
-      page-break-inside: avoid;
+    html {
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+      color-adjust: exact !important;
     }
 
-    /* İçerideki tüm overflow'ları aç */
-    .cv-print-root * {
-      overflow: visible !important;
-      max-height: unset !important;
-    }
-
-    /* Gradient arka planlar print'te görünsün */
-    .cv-header,
-    [style*="linear-gradient"],
-    [style*="background:"],
-    [style*="background :"] {
+    /* Body arka planı = CV'nin kendi arka planı → sayfa boşlukları da renkli olur */
+    body {
+      margin: 0;
+      padding: 0;
+      width: 210mm;
+      min-height: 297mm;
+      background: ${computedBg || "#ffffff"};
       -webkit-print-color-adjust: exact !important;
       print-color-adjust: exact !important;
     }
 
-    /* Section sayfa kırılımında bölünmesin */
+    /* ── CV KAPSAYICI: tam A4 doldur ── */
+    .cv-print-root {
+      width: 210mm !important;
+      max-width: 210mm !important;
+      min-height: 297mm !important;   /* ← İçerik az olsa da A4 yüksekliğini doldur */
+      height: auto !important;
+      border-radius: 0 !important;
+      box-shadow: none !important;
+      aspect-ratio: unset !important;
+      overflow: visible !important;
+      display: flex !important;
+      flex-direction: column !important;
+    }
+
+    /* Sidebar'lar min-height alsın (Modern, Executive) */
+    .cv-print-root > div {
+      overflow: visible !important;
+      max-height: unset !important;
+      height: auto !important;
+    }
+
+    /* Sidebar div'leri kendi arkaplanlarını tam uzatabilsin */
+    .cv-print-root > div[style*="flex"] > div {
+      min-height: 297mm !important;
+    }
+
+    /* Gradient ve solid renkler print'te çıksın */
+    * {
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+
     .cv-section {
       page-break-inside: avoid;
       break-inside: avoid;
     }
 
-    /* ── PRINT SAYFA AYARI ── */
     @page {
       size: A4 portrait;
-      margin: 0;
-    }
-
-    @media print {
-      html, body {
-        width: 210mm;
-        -webkit-print-color-adjust: exact !important;
-        print-color-adjust: exact !important;
-      }
-
-      /* Tarayıcı header/footer'ı gizle */
-      @page { margin: 0; }
+      margin: 0mm;
     }
   </style>
 </head>
 <body>
   ${cvHTML}
   <script>
-    // Fontlar yüklenince print başlat
     document.fonts.ready.then(function() {
       setTimeout(function() {
         window.print();
-        // Print dialog kapandıktan sonra pencereyi kapat
         window.addEventListener('afterprint', function() {
           window.close();
         });
-      }, 400);
+      }, 600);
     });
   </script>
 </body>
 </html>`;
 
-  // Yeni pencere aç
   const printWindow = window.open("", "_blank", "width=900,height=700");
   if (!printWindow) {
-    alert("Pop-up engellendi. Lütfen tarayıcı ayarlarından pop-up'lara izin verin.");
+    alert("Pop-up engellendi. Lütfen tarayıcı ayarlarından pop-up'lara izin verin ve tekrar deneyin.");
     return;
   }
-
   printWindow.document.open();
   printWindow.document.write(printHTML);
   printWindow.document.close();

@@ -30,12 +30,12 @@ const TemplateMinimal = forwardRef<HTMLDivElement, Props>(function TemplateMinim
       width: "100%", maxWidth: "700px",
       background: "#fff", borderRadius: "var(--radius-lg)", boxShadow: "var(--shadow-preview)",
       overflow: "hidden", fontFamily: "'Inter',sans-serif", fontSize: "13px", color: "#1A1A2E",
-      display: "flex", flexDirection: "column", aspectRatio: "1 / 1.414",
+      display: "flex", flexDirection: "column", minHeight: "297mm",
     }}>
       {/* Accent bar */}
       <div style={{ height: "5px", background: "linear-gradient(90deg,#1A1A2E,#4A4E8A,#7B8EC8)", flexShrink: 0 }} />
 
-      <div style={{ padding: "28px 40px", flex: 1, overflowY: "auto", display: "flex", flexDirection: "column", gap: "0" }}>
+      <div style={{ padding: "28px 40px", flex: 1, display: "flex", flexDirection: "column", gap: "0" }}>
         {/* Header row: avatar + name */}
         <div style={{ display: "flex", alignItems: "center", gap: "20px", marginBottom: "20px", paddingBottom: "18px", borderBottom: "1px solid #E8E8F0" }}>
           {/* Avatar */}

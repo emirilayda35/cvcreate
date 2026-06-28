@@ -31,7 +31,7 @@ const TemplateExecutive = forwardRef<HTMLDivElement, Props>(function TemplateExe
       width: "100%", maxWidth: "700px", background: "#FAFAFA",
       borderRadius: "var(--radius-lg)", boxShadow: "var(--shadow-preview)",
       overflow: "hidden", fontFamily: "'Inter',sans-serif", fontSize: "13px",
-      color: navy, display: "flex", flexDirection: "column", aspectRatio: "1 / 1.414",
+      color: navy, display: "flex", flexDirection: "column", minHeight: "297mm",
     }}>
       {/* ── TOP HEADER — koyu lacivert ── */}
       <div className="cv-header" style={{
@@ -87,10 +87,10 @@ const TemplateExecutive = forwardRef<HTMLDivElement, Props>(function TemplateExe
       </div>
 
       {/* ── BODY — 2 sütun ── */}
-      <div style={{ flex: 1, display: "flex", overflow: "hidden" }}>
+      <div style={{ flex: 1, display: "flex", overflow: "visible" }}>
 
         {/* LEFT — dar sütun */}
-        <div style={{ width: "190px", flexShrink: 0, background: "#F0F2F5", padding: "24px 18px", display: "flex", flexDirection: "column", gap: "20px", overflowY: "auto" }}>
+        <div style={{ width: "190px", flexShrink: 0, background: "#F0F2F5", padding: "24px 18px", display: "flex", flexDirection: "column", gap: "20px", minHeight: "100%" }}>
           {/* Skills */}
           {filledSkills.length > 0 && (
             <div className="cv-section">
@@ -133,7 +133,7 @@ const TemplateExecutive = forwardRef<HTMLDivElement, Props>(function TemplateExe
         </div>
 
         {/* RIGHT — ana içerik */}
-        <div style={{ flex: 1, padding: "24px 28px", overflowY: "auto", display: "flex", flexDirection: "column", gap: "20px" }}>
+        <div style={{ flex: 1, padding: "24px 28px", display: "flex", flexDirection: "column", gap: "20px" }}>
           {personal.summary && (
             <div className="cv-section">
               <ExecSectionTitle title={t.cvSummary} navy={navy} gold={gold} />

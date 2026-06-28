@@ -29,7 +29,7 @@ const TemplateClassic = forwardRef<HTMLDivElement, Props>(function TemplateClass
       background: "#fff", borderRadius: "var(--radius-lg)", boxShadow: "var(--shadow-preview)",
       overflow: "hidden", fontFamily: "'Inter',sans-serif", fontSize: "13px", color: "#2A3445",
       /* A4 aspect ratio lock for screen */
-      aspectRatio: "1 / 1.414", display: "flex", flexDirection: "column",
+      minHeight: "297mm", display: "flex", flexDirection: "column",
     }}>
 
       {/* Header */}
@@ -68,7 +68,7 @@ const TemplateClassic = forwardRef<HTMLDivElement, Props>(function TemplateClass
       </div>
 
       {/* Body — scrollable on screen, auto on print */}
-      <div style={{ flex: 1, padding: "24px 40px", display: "flex", flexDirection: "column", gap: "20px", overflowY: "auto" }}>
+      <div style={{ flex: 1, padding: "24px 40px", display: "flex", flexDirection: "column", gap: "20px" }}>
         {personal.summary && (
           <div className="cv-section">
             <Section title={t.cvSummary}><p style={{ lineHeight: 1.7, color: "#3D4E61" }}>{personal.summary}</p></Section>

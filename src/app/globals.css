@@ -54,3 +54,43 @@ html, body {
   outline: 2px solid var(--color-primary);
   outline-offset: 2px;
 }
+
+/* ── CV ÖNIZLEME: ekranda A4 oranı ── */
+.cv-print-root {
+  min-height: min(calc(100vw * 0.6 * 1.414), 990px);
+}
+
+/* ── PRINT: tam A4, kenar boşluksuz ── */
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 0mm;
+  }
+
+  html, body {
+    width: 210mm !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .cv-print-root {
+    min-height: 297mm !important;
+    width: 210mm !important;
+    max-width: 210mm !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    overflow: visible !important;
+  }
+
+  .cv-print-root * {
+    overflow: visible !important;
+    max-height: unset !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .cv-section {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+}

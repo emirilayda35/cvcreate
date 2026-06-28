@@ -28,9 +28,9 @@ const TemplateHarvard = forwardRef<HTMLDivElement, Props>(function TemplateHarva
       borderRadius: "var(--radius-lg)", boxShadow: "var(--shadow-preview)",
       overflow: "hidden", fontFamily: "'Times New Roman',Georgia,serif",
       fontSize: "13px", color: "#1A1A1A",
-      display: "flex", flexDirection: "column", aspectRatio: "1 / 1.414",
+      display: "flex", flexDirection: "column", minHeight: "297mm",
     }}>
-      <div style={{ padding: "36px 48px 0", flex: 1, overflowY: "auto", display: "flex", flexDirection: "column" }}>
+      <div style={{ padding: "36px 48px 0", flex: 1, display: "flex", flexDirection: "column" }}>
 
         {/* ══ HEADER ══ */}
         <div style={{
