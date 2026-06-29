@@ -61,10 +61,14 @@ export default function Home() {
     setPaywallOpen(false);
     setTimeout(() => {
       if (!cvRef.current) return;
-      setIsPrinting(true);
-      printCV(cvRef.current, getDocTitle(), lang);
-      setTimeout(() => setIsPrinting(false), 1000);
-    }, 200);
+      printCV(
+        cvRef.current,
+        getDocTitle(),
+        lang,
+        () => setIsPrinting(true),
+        () => setIsPrinting(false),
+      );
+    }, 300);
   };
 
   const hasContent = !!(cvData.personal.fullName || cvData.experiences.length || cvData.education.length || cvData.skills.length);

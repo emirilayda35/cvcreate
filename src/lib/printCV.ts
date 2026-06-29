@@ -1,173 +1,167 @@
 import { LangCode } from "@/types/cv";
 
 /**
- * CV'yi izole bir HTML olarak Blob URL'e yazar,
- * yeni sekmede açar → fontlar yüklenince print dialog başlar.
- * Mobil dahil tüm tarayıcılarda çalışır.
+ * CV elementini html2canvas ile piksel-mükemmel render eder,
+ * jsPDF ile A4 PDF oluşturur, doğrudan indirir.
+ *
+ * ✅ Mobil Chrome / Safari
+ * ✅ Masaüstü Chrome / Firefox / Edge
+ * ✅ Samsung Internet
+ * ✅ Print dialog YOK — direkt .pdf indirilir
+ * ✅ Gradient, fotoğraf, renk koruması
  */
-export function printCV(
+export async function printCV(
   cvElement: HTMLElement,
   docTitle: string,
-  lang: LangCode
-): void {
-  const cvHTML = cvElement.outerHTML;
-  const dir = lang === "ar" ? "rtl" : "ltr";
-  const computedBg =
-    window.getComputedStyle(cvElement).backgroundColor || "#ffffff";
+  _lang: LangCode,
+  onStart?: () => void,
+  onDone?: () => void
+): Promise<void> {
+  onStart?.();
 
-  // Google Fonts'u base64 değil — <link> ile embed et
-  // (Blob URL same-origin değil, external fetch kısıtlaması yok)
-  const googleFonts =
-    "https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@600;700&display=swap";
+  try {
+    // ── Dinamik import (bundle boyutunu küçük tutar) ──
+    const [{ default: html2canvas }, { jsPDF }] = await Promise.all([
+      import("html2canvas"),
+      import("jspdf"),
+    ]);
 
-  const html = `<!DOCTYPE html>
-<html lang="${lang}" dir="${dir}">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>${docTitle}</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="${googleFonts}" rel="stylesheet" />
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    // A4 boyutları (mm ve px @ 96dpi → 2x scale = yüksek çözünürlük)
+    const A4_WIDTH_MM  = 210;
+    const A4_HEIGHT_MM = 297;
+    const SCALE        = 2; // retina kalitesi
 
-    :root {
-      --color-bg: #F4F6F8;
-      --color-surface: #FFFFFF;
-      --color-surface-2: #EEF1F5;
-      --color-border: #DDE2EA;
-      --color-border-focus: #7A92B0;
-      --color-primary: #1E5799;
-      --color-primary-light: #EBF0F8;
-      --color-primary-hover: #2E4A73;
-      --color-text-heading: #1A2535;
-      --color-text-body: #3D4E61;
-      --color-text-muted: #7A8EA6;
-      --color-text-placeholder: #A8B8CC;
-      --color-accent: #2E86C8;
-      --color-accent-light: #D6E8F8;
-      --radius-sm: 6px;
-      --radius-md: 10px;
-      --radius-lg: 0px;
-      --shadow-card: none;
-      --shadow-preview: none;
-    }
-
-    html {
-      -webkit-print-color-adjust: exact !important;
-      print-color-adjust: exact !important;
-      color-adjust: exact !important;
-    }
-
-    body {
-      margin: 0;
-      padding: 0;
-      background: ${computedBg};
-      -webkit-print-color-adjust: exact !important;
-      print-color-adjust: exact !important;
-    }
-
-    .cv-print-root {
-      width: 210mm !important;
-      max-width: 210mm !important;
-      min-height: 297mm !important;
+    // ── Geçici klon: ekran dışına yerleştir, tam A4 genişliğinde ──
+    const clone = cvElement.cloneNode(true) as HTMLElement;
+    clone.style.cssText = `
+      position: fixed !important;
+      top: -9999px !important;
+      left: -9999px !important;
+      width: 794px !important;        /* 210mm @ 96dpi */
+      min-height: 1123px !important;  /* 297mm @ 96dpi */
       height: auto !important;
+      max-width: 794px !important;
       border-radius: 0 !important;
       box-shadow: none !important;
+      overflow: visible !important;
       aspect-ratio: unset !important;
-      overflow: visible !important;
-      display: flex !important;
-      flex-direction: column !important;
-      -webkit-print-color-adjust: exact !important;
-      print-color-adjust: exact !important;
-    }
+      background: ${window.getComputedStyle(cvElement).background} !important;
+    `;
 
-    .cv-print-root * {
-      overflow: visible !important;
-      max-height: unset !important;
-      -webkit-print-color-adjust: exact !important;
-      print-color-adjust: exact !important;
-    }
-
-    .cv-sidebar {
-      min-height: 297mm !important;
-    }
-
-    .cv-section {
-      page-break-inside: avoid;
-      break-inside: avoid;
-    }
-
-    @page {
-      size: A4 portrait;
-      margin: 0mm;
-    }
-
-    /* Ekran görünümü — kullanıcı URL'de CV'yi görsün */
-    @media screen {
-      body {
-        display: flex;
-        justify-content: center;
-        align-items: flex-start;
-        min-height: 100vh;
-        background: #E8ECF0;
-        padding: 20px;
-      }
-      .cv-print-root {
-        box-shadow: 0 8px 40px rgba(0,0,0,0.18) !important;
-        border-radius: 4px !important;
-      }
-    }
-  </style>
-</head>
-<body>
-  ${cvHTML}
-  <script>
-    // Mobil uyumlu: fontlar hazır olunca print aç
-    if (document.fonts && document.fonts.ready) {
-      document.fonts.ready.then(function() {
-        setTimeout(function() { window.print(); }, 800);
-      });
-    } else {
-      // Fallback: fonts API yoksa 1.5sn bekle
-      setTimeout(function() { window.print(); }, 1500);
-    }
-
-    window.addEventListener('afterprint', function() {
-      // Mobilde sekme kapanmayabilir, sorun değil
-      try { window.close(); } catch(e) {}
+    // İç div'lerin overflow'unu aç
+    const allDivs = clone.querySelectorAll<HTMLElement>("*");
+    allDivs.forEach(el => {
+      el.style.overflow   = "visible";
+      el.style.maxHeight  = "unset";
     });
-  </script>
-</body>
-</html>`;
 
-  // ── Blob URL yöntemi (mobil uyumlu) ──────────────────────────
-  // window.open() yerine Blob + <a> → mobil Chrome/Safari'de çalışır
-  try {
-    const blob = new Blob([html], { type: "text/html;charset=utf-8" });
-    const url  = URL.createObjectURL(blob);
+    // cv-sidebar: tam uzasın
+    const sidebars = clone.querySelectorAll<HTMLElement>(".cv-sidebar");
+    sidebars.forEach(sb => {
+      sb.style.minHeight = "1123px";
+    });
 
-    const a = document.createElement("a");
-    a.href   = url;
-    a.target = "_blank";
-    a.rel    = "noopener noreferrer";
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
+    document.body.appendChild(clone);
 
-    // Blob URL'i 60 saniye sonra temizle
-    setTimeout(() => URL.revokeObjectURL(url), 60_000);
+    // Kısa bekleme: render tamamlansın
+    await new Promise(r => setTimeout(r, 200));
 
-  } catch {
-    // Blob başarısız olursa window.open fallback
-    const w = window.open("", "_blank");
-    if (w) {
-      w.document.open();
-      w.document.write(html);
-      w.document.close();
+    // ── html2canvas ile render ──
+    const canvas = await html2canvas(clone, {
+      scale:            SCALE,
+      useCORS:          true,       // dış kaynaklı resimler (avatar vs)
+      allowTaint:       true,
+      logging:          false,
+      backgroundColor:  null,       // şeffaf → kendi bg'si korunur
+      imageTimeout:     15000,
+      onclone: (doc) => {
+        // Klonlanmış doc'ta da overflow'ları aç
+        doc.querySelectorAll<HTMLElement>("*").forEach(el => {
+          el.style.overflow  = "visible";
+          el.style.maxHeight = "unset";
+        });
+      },
+    });
+
+    document.body.removeChild(clone);
+
+    // ── Canvas boyutlarını al ──
+    const canvasWidthPx  = canvas.width;
+    const canvasHeightPx = canvas.height;
+
+    // Piksel → mm dönüşümü
+    const pxPerMm = canvasWidthPx / A4_WIDTH_MM;
+    const contentHeightMm = canvasHeightPx / pxPerMm;
+
+    // İçerik 1 sayfadan uzunsa çok sayfa; değilse tam A4
+    const pdf = new jsPDF({
+      orientation: "portrait",
+      unit:        "mm",
+      format:      "a4",
+    });
+
+    const imgData = canvas.toDataURL("image/jpeg", 0.95);
+
+    if (contentHeightMm <= A4_HEIGHT_MM) {
+      // ── Tek sayfa: tam A4 dolacak şekilde yerleştir ──
+      pdf.addImage(
+        imgData,
+        "JPEG",
+        0, 0,           // x, y
+        A4_WIDTH_MM,
+        A4_HEIGHT_MM,   // tam A4 yüksekliği → beyaz kalmaz
+        undefined,
+        "FAST"
+      );
     } else {
-      alert("PDF açılamadı. Lütfen tarayıcınızda pop-up ve yeni sekme iznini açın.");
+      // ── Çok sayfa: her A4 dilimini ayrı sayfaya ekle ──
+      let yOffset = 0;
+
+      while (yOffset < contentHeightMm) {
+        if (yOffset > 0) pdf.addPage();
+
+        // Bu sayfada gösterilecek slice yüksekliği
+        const sliceHeightMm = Math.min(A4_HEIGHT_MM, contentHeightMm - yOffset);
+        const sliceHeightPx = sliceHeightMm * pxPerMm;
+        const yOffsetPx     = yOffset * pxPerMm;
+
+        // Slice canvas oluştur
+        const sliceCanvas  = document.createElement("canvas");
+        sliceCanvas.width  = canvasWidthPx;
+        sliceCanvas.height = Math.round(sliceHeightPx);
+
+        const ctx = sliceCanvas.getContext("2d")!;
+        ctx.drawImage(
+          canvas,
+          0, Math.round(yOffsetPx),
+          canvasWidthPx, Math.round(sliceHeightPx),
+          0, 0,
+          canvasWidthPx, Math.round(sliceHeightPx)
+        );
+
+        const sliceData = sliceCanvas.toDataURL("image/jpeg", 0.95);
+        pdf.addImage(
+          sliceData,
+          "JPEG",
+          0, 0,
+          A4_WIDTH_MM,
+          sliceHeightMm,
+          undefined,
+          "FAST"
+        );
+
+        yOffset += A4_HEIGHT_MM;
+      }
     }
+
+    // ── PDF indir ──
+    const fileName = docTitle.endsWith(".pdf") ? docTitle : `${docTitle}.pdf`;
+    pdf.save(fileName);
+
+  } catch (err) {
+    console.error("[printCV] PDF oluşturma hatası:", err);
+    alert("PDF oluşturulurken bir hata oluştu. Lütfen tekrar deneyin.");
+  } finally {
+    onDone?.();
   }
 }
